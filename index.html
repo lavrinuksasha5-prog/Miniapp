@@ -3,100 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Статистика ссылок</title>
+    <title>Link Manager</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        :root {
+            --bg-color: var(--tg-theme-bg-color, #121212);
+            --card-bg: var(--tg-theme-secondary-bg-color, #1e1e1e);
+            --text-color: var(--tg-theme-text-color, #ffffff);
+            --hint-color: var(--tg-theme-hint-color, #888888);
+            --btn-color: var(--tg-theme-button-color, #2ea6ff);
+        }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             margin: 0;
             padding: 16px;
+            padding-bottom: 80px;
         }
-        .header {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 16px;
-            text-align: center;
-        }
-        .card {
-            background-color: var(--tg-theme-secondary-bg-color, #f1f1f1);
+        .tabs {
+            display: flex;
+            background-color: var(--card-bg);
             border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 4px;
+            margin-bottom: 20px;
         }
-        .name {
-            font-weight: 500;
-            font-size: 15px;
-            word-break: break-word;
-            max-width: 50%;
+        .tab {
+            flex: 1; text-align: center; padding: 10px; font-weight: 600; font-size: 14px;
+            border-radius: 8px; cursor: pointer; color: var(--hint-color); transition: all 0.2s;
         }
-        .stats {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 4px;
-            font-size: 14px;
+        .tab.active { background-color: var(--btn-color); color: #fff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* --- ФОРМА СОЗДАНИЯ --- */
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 8px; font-size: 14px; color: var(--hint-color); }
+        textarea {
+            width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--card-bg);
+            background-color: var(--card-bg); color: var(--text-color); font-size: 16px;
+            box-sizing: border-box; resize: vertical; min-height: 150px; font-family: monospace;
         }
-        .req { color: #f39c12; font-weight: bold; }
-        .join { color: #2ecc71; font-weight: bold; }
-        .loader {
-            text-align: center;
-            padding: 20px;
-            color: #888;
+        .btn-create {
+            width: 100%; padding: 14px; background-color: var(--btn-color); color: #fff;
+            border: none; border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer;
         }
+        .help-text { font-size: 12px; color: var(--hint-color); margin-top: 8px; line-height: 1.4; }
+
+        /* --- СТАТИСТИКА --- */
+        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .header { font-size: 20px; font-weight: 700; }
+        .btn-edit { background: transparent; color: var(--btn-color); border: none; font-size: 16px; font-weight: 600; }
+        .card {
+            background-color: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; flex-direction: column; gap: 12px;
+            border: 2px solid transparent;
+        }
+        .card.selected { border-color: var(--btn-color); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; }
+        .name-container { display: flex; align-items: center; gap: 12px; }
+        .checkbox { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--hint-color); display: none; align-items: center; justify-content: center; }
+        .checkbox.active { display: flex; }
+        .checkbox.checked { background-color: var(--btn-color); border-color: var(--btn-color); }
+        .checkbox.checked::after { content: ''; width: 6px; height: 12px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); margin-bottom: 3px; }
+        .name { font-weight: 600; font-size: 16px; }
+        .stats { display: flex; gap: 12px; font-size: 14px; font-weight: 500; }
+        .req { color: #f39c12; }
+        .join { color: #2ecc71; }
+        .actions { display: flex; gap: 8px; margin-top: 4px; }
+        .actions.hidden { display: none; }
+        .btn { flex: 1; padding: 10px; border-radius: 10px; border: none; font-weight: 600; font-size: 14px; cursor: pointer; }
+        .btn-copy { background-color: var(--btn-color); color: #fff; }
+        .btn-delete { background-color: rgba(231, 76, 60, 0.15); color: #e74c3c; }
+        .url-text { font-size: 12px; color: var(--hint-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .bottom-panel {
+            position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--card-bg);
+            padding: 16px; box-shadow: 0 -4px 12px rgba(0,0,0,0.2); display: none; z-index: 100;
+        }
+        .bottom-panel.active { display: flex; }
+        .btn-delete-all { background-color: #e74c3c; color: #fff; padding: 12px; border-radius: 12px; border: none; font-weight: 700; font-size: 15px; width: 100%; }
+        .loader { text-align: center; padding: 40px; color: var(--hint-color); }
     </style>
 </head>
 <body>
-    <div class="header">📊 Аналитика ссылок</div>
-    <div id="list" class="loader">Загрузка данных...</div>
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('stats')">📊 Статистика</div>
+        <div class="tab" onclick="switchTab('create')">➕ Создать</div>
+    </div>
+
+    <!-- СТАТИСТИКА -->
+    <div id="tab-stats" class="tab-content active">
+        <div class="header-container">
+            <div class="header">Аналитика</div>
+            <button class="btn-edit" id="btn-edit" onclick="toggleEditMode()">Выбрать</button>
+        </div>
+        <div id="list" class="loader">Загрузка данных...</div>
+    </div>
+
+    <!-- СОЗДАНИЕ -->
+    <div id="tab-create" class="tab-content">
+        <div class="header-container"><div class="header">Новые ссылки</div></div>
+        <div class="form-group">
+            <label>Список каналов и количество:</label>
+            <textarea id="create-input" placeholder="Джо 3&#10;Tema Alt 2&#10;VLASOV 6"></textarea>
+            <div class="help-text">Введи название и через пробел количество. Каждое название — с новой строки.</div>
+        </div>
+        <button class="btn-create" onclick="generateLinks()">🚀 Создать ссылки</button>
+    </div>
+
+    <div class="bottom-panel" id="bottom-panel">
+        <button class="btn-delete-all" id="btn-delete-all" onclick="deleteSelected()">Удалить выбранные (0)</button>
+    </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Разворачиваем на весь экран
-
-        // Твоя ссылка с Railway
+        tg.expand();
         const API_URL = "https://worker-production-b9f1.up.railway.app/api/stats";
+        let isEditMode = false;
+        let selectedItems = new Set();
+        let currentData = [];
 
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            if (tab === 'stats') {
+                document.querySelectorAll('.tab')[0].classList.add('active');
+                document.getElementById('tab-stats').classList.add('active');
+                fetchStats();
+            } else {
+                document.querySelectorAll('.tab')[1].classList.add('active');
+                document.getElementById('tab-create').classList.add('active');
+                document.getElementById('bottom-panel').classList.remove('active');
+            }
+        }
+
+        // Отправка данных боту для создания и показ красивого сообщения
+        function generateLinks() {
+            const text = document.getElementById('create-input').value.trim();
+            if (!text) return tg.showAlert("Пожалуйста, введи список");
+            
+            // Отправляем данные в бота
+            tg.sendData(JSON.stringify({ 
+                action: "prepare_create", 
+                text: text 
+            }));
+            
+            // Закрываем Mini App
+            tg.close();
+        }
+
+        // --- СТАТИСТИКА ---
         async function fetchStats() {
             try {
                 const response = await fetch(API_URL);
-                const data = await response.json();
-                
-                const listEl = document.getElementById('list');
-                
-                if (data.length === 0) {
-                    listEl.innerHTML = "Пока нет данных. Как только пойдут заявки — они появятся здесь.";
-                    return;
-                }
+                currentData = await response.json();
+                renderList();
+            } catch (e) {
+                document.getElementById('list').innerHTML = "Ошибка загрузки данных";
+            }
+        }
 
-                // Сортируем по количеству заявок (по убыванию)
-                data.sort((a, b) => b.requests - a.requests);
-
-                let html = "";
-                data.forEach(item => {
-                    html += `
-                        <div class="card">
-                            <div class="name">${item.name}</div>
+        function renderList() {
+            const listEl = document.getElementById('list');
+            if (currentData.length === 0) { listEl.innerHTML = "Пока нет данных."; return; }
+            currentData.sort((a, b) => b.requests - a.requests);
+            let html = "";
+            currentData.forEach(item => {
+                const isSelected = selectedItems.has(item.name);
+                const shortUrl = item.url ? (item.url.length > 30 ? item.url.substring(0, 30) + '...' : item.url) : 'Ссылка не найдена';
+                html += `
+                    <div class="card ${isSelected ? 'selected' : ''}" onclick="handleCardClick(event, '${item.name}')">
+                        <div class="card-header">
+                            <div class="name-container">
+                                <div class="checkbox ${isEditMode ? 'active' : ''} ${isSelected ? 'checked' : ''}"></div>
+                                <div class="name">${item.name}</div>
+                            </div>
                             <div class="stats">
                                 <span class="req">Заявки: ${item.requests}</span>
                                 <span class="join">Вступили: ${item.joins}</span>
                             </div>
                         </div>
-                    `;
-                });
-                listEl.innerHTML = html;
-            } catch (e) {
-                document.getElementById('list').innerHTML = "Ошибка загрузки данных. Проверь связь с сервером.";
-            }
+                        <div class="url-text">${shortUrl}</div>
+                        <div class="actions ${isEditMode ? 'hidden' : ''}">
+                            <button class="btn btn-copy" onclick="event.stopPropagation(); copyLink('${item.url}')">Скопировать</button>
+                            <button class="btn btn-delete" onclick="event.stopPropagation(); deleteSingle('${item.name}')">Удалить</button>
+                        </div>
+                    </div>
+                `;
+            });
+            listEl.innerHTML = html;
         }
 
-        // Загружаем при открытии
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            document.getElementById('btn-edit').innerText = isEditMode ? 'Отмена' : 'Выбрать';
+            document.getElementById('bottom-panel').classList.toggle('active', isEditMode);
+            if (!isEditMode) selectedItems.clear();
+            updateDeleteButton();
+            renderList();
+        }
+
+        function handleCardClick(event, name) {
+            if (!isEditMode) return;
+            if (selectedItems.has(name)) selectedItems.delete(name);
+            else selectedItems.add(name);
+            updateDeleteButton();
+            renderList();
+        }
+
+        function updateDeleteButton() {
+            document.getElementById('btn-delete-all').innerText = `Удалить выбранные (${selectedItems.size})`;
+        }
+
+        function deleteSelected() {
+            if (selectedItems.size === 0) return;
+            tg.showConfirm(`Удалить ${selectedItems.size} ссылок?`, (confirmed) => {
+                if (confirmed) {
+                    tg.sendData(JSON.stringify({ action: "mass_delete", names: Array.from(selectedItems) }));
+                    tg.close();
+                }
+            });
+        }
+
+        function deleteSingle(name) {
+            tg.showConfirm(`Удалить ${name}?`, (confirmed) => {
+                if (confirmed) {
+                    tg.sendData(JSON.stringify({ action: "delete", name: name }));
+                    tg.close();
+                }
+            });
+        }
+
+        function copyLink(url) {
+            if (!url) return tg.showAlert("Ссылка не найдена");
+            navigator.clipboard.writeText(url).then(() => tg.showAlert("Ссылка скопирована!"));
+        }
+
         fetchStats();
-        // И обновляем каждые 5 секунд (в реальном времени)
         setInterval(fetchStats, 5000);
     </script>
 </body>
