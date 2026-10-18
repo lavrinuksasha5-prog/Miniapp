@@ -13,76 +13,104 @@
             --hint-color: var(--tg-theme-hint-color, #888888);
             --btn-color: var(--tg-theme-button-color, #2ea6ff);
         }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 16px;
-            padding-bottom: 80px;
-        }
-        .tabs {
-            display: flex;
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            padding: 4px;
-            margin-bottom: 20px;
-        }
-        .tab {
-            flex: 1; text-align: center; padding: 10px; font-weight: 600; font-size: 14px;
-            border-radius: 8px; cursor: pointer; color: var(--hint-color); transition: all 0.2s;
-        }
-        .tab.active { background-color: var(--btn-color); color: #fff; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 16px; padding-bottom: 80px; }
+        .tabs { display: flex; background: var(--card-bg); border-radius: 12px; padding: 4px; margin-bottom: 20px; }
+        .tab { flex: 1; text-align: center; padding: 10px; font-weight: 600; font-size: 14px; border-radius: 8px; cursor: pointer; color: var(--hint-color); }
+        .tab.active { background: var(--btn-color); color: #fff; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* --- ФОРМА СОЗДАНИЯ --- */
-        .form-group { margin-bottom: 16px; }
-        label { display: block; margin-bottom: 8px; font-size: 14px; color: var(--hint-color); }
-        textarea {
-            width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--card-bg);
-            background-color: var(--card-bg); color: var(--text-color); font-size: 16px;
-            box-sizing: border-box; resize: vertical; min-height: 150px; font-family: monospace;
-        }
-        .btn-create {
-            width: 100%; padding: 14px; background-color: var(--btn-color); color: #fff;
-            border: none; border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer;
-        }
-        .help-text { font-size: 12px; color: var(--hint-color); margin-top: 8px; line-height: 1.4; }
+        textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--card-bg); background: var(--card-bg); color: var(--text-color); font-size: 16px; box-sizing: border-box; min-height: 150px; font-family: monospace; }
+        .btn-create { width: 100%; padding: 14px; background: var(--btn-color); color: #fff; border: none; border-radius: 12px; font-weight: 700; font-size: 16px; margin-top: 10px; }
+        
+        #progress-area { display: none; margin-top: 20px; background: var(--card-bg); padding: 16px; border-radius: 12px; }
+        .progress-bar { height: 8px; background: #333; border-radius: 4px; overflow: hidden; margin: 10px 0; }
+        .progress-fill { height: 100%; background: var(--btn-color); width: 0%; transition: width 0.3s; }
+        .progress-text { font-size: 14px; text-align: center; color: var(--hint-color); }
+        .task-status { font-size: 13px; margin-top: 8px; color: var(--text-color); text-align: center; }
 
-        /* --- СТАТИСТИКА --- */
         .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .header { font-size: 20px; font-weight: 700; }
-        .btn-edit { background: transparent; color: var(--btn-color); border: none; font-size: 16px; font-weight: 600; }
-        .card {
-            background-color: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; flex-direction: column; gap: 12px;
-            border: 2px solid transparent;
+        
+        /* Карточки */
+        .card { 
+            background: var(--card-bg); 
+            border-radius: 16px; 
+            padding: 14px; 
+            margin-bottom: 12px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            border: 2px solid transparent; 
+            transition: border-color 0.2s;
         }
         .card.selected { border-color: var(--btn-color); }
-        .card-header { display: flex; justify-content: space-between; align-items: center; }
-        .name-container { display: flex; align-items: center; gap: 12px; }
-        .checkbox { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--hint-color); display: none; align-items: center; justify-content: center; }
-        .checkbox.active { display: flex; }
-        .checkbox.checked { background-color: var(--btn-color); border-color: var(--btn-color); }
-        .checkbox.checked::after { content: ''; width: 6px; height: 12px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); margin-bottom: 3px; }
-        .name { font-weight: 600; font-size: 16px; }
-        .stats { display: flex; gap: 12px; font-size: 14px; font-weight: 500; }
-        .req { color: #f39c12; }
-        .join { color: #2ecc71; }
-        .actions { display: flex; gap: 8px; margin-top: 4px; }
-        .actions.hidden { display: none; }
-        .btn { flex: 1; padding: 10px; border-radius: 10px; border: none; font-weight: 600; font-size: 14px; cursor: pointer; }
-        .btn-copy { background-color: var(--btn-color); color: #fff; }
-        .btn-delete { background-color: rgba(231, 76, 60, 0.15); color: #e74c3c; }
-        .url-text { font-size: 12px; color: var(--hint-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .bottom-panel {
-            position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--card-bg);
-            padding: 16px; box-shadow: 0 -4px 12px rgba(0,0,0,0.2); display: none; z-index: 100;
+        
+        .card-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            gap: 8px;
         }
+        
+        /* Контейнер для галочки и названия */
+        .name-container { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            flex: 1; /* Занимает всё свободное место */
+            min-width: 0; /* Чтобы текст мог сжиматься */
+        }
+
+        /* Галочка */
+        .checkbox { 
+            width: 22px; 
+            height: 22px; 
+            border-radius: 50%; 
+            border: 2px solid var(--hint-color); 
+            display: none; 
+            align-items: center; 
+            justify-content: center; 
+            flex-shrink: 0; /* Галочка не сжимается */
+        }
+        .checkbox.active { display: flex; }
+        .checkbox.checked { background: var(--btn-color); border-color: var(--btn-color); }
+        .checkbox.checked::after { content: ''; width: 6px; height: 12px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); margin-bottom: 3px; }
+
+        /* Название в рамке */
+        .name-box {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 14px;
+            padding: 4px 8px;
+            border-radius: 8px;
+            word-break: break-word; /* Перенос длинного текста */
+            line-height: 1.2;
+        }
+        
+        /* Статистика */
+        .stats { 
+            display: flex; 
+            flex-direction: column; /* В колонку, чтобы помещалось */
+            align-items: flex-end; 
+            gap: 2px; 
+            font-size: 12px; 
+            font-weight: 600; 
+            flex-shrink: 0; /* Не сжимать */
+        }
+        .req { color: #f39c12; } 
+        .join { color: #2ecc71; }
+        
+        .actions { display: flex; gap: 8px; }
+        .actions.hidden { display: none; }
+        .btn { flex: 1; padding: 10px; border-radius: 10px; border: none; font-weight: 600; font-size: 14px; }
+        .btn-copy { background: var(--btn-color); color: #fff; }
+        .btn-delete { background: rgba(231, 76, 60, 0.15); color: #e74c3c; }
+        
+        .bottom-panel { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); padding: 16px; display: none; z-index: 100; }
         .bottom-panel.active { display: flex; }
-        .btn-delete-all { background-color: #e74c3c; color: #fff; padding: 12px; border-radius: 12px; border: none; font-weight: 700; font-size: 15px; width: 100%; }
-        .loader { text-align: center; padding: 40px; color: var(--hint-color); }
+        .btn-delete-all { background: #e74c3c; color: #fff; padding: 12px; border-radius: 12px; border: none; font-weight: 700; width: 100%; }
     </style>
 </head>
 <body>
@@ -91,24 +119,24 @@
         <div class="tab" onclick="switchTab('create')">➕ Создать</div>
     </div>
 
-    <!-- СТАТИСТИКА -->
     <div id="tab-stats" class="tab-content active">
         <div class="header-container">
-            <div class="header">Аналитика</div>
-            <button class="btn-edit" id="btn-edit" onclick="toggleEditMode()">Выбрать</button>
+            <div style="font-size: 20px; font-weight: 700;">Аналитика</div>
+            <button style="background: transparent; color: var(--btn-color); border: none; font-size: 16px; font-weight: 600;" id="btn-edit" onclick="toggleEditMode()">Выбрать</button>
         </div>
-        <div id="list" class="loader">Загрузка данных...</div>
+        <div id="list">Загрузка...</div>
     </div>
 
-    <!-- СОЗДАНИЕ -->
     <div id="tab-create" class="tab-content">
-        <div class="header-container"><div class="header">Новые ссылки</div></div>
-        <div class="form-group">
-            <label>Список каналов и количество:</label>
-            <textarea id="create-input" placeholder="Джо 3&#10;Tema Alt 2&#10;VLASOV 6"></textarea>
-            <div class="help-text">Введи название и через пробел количество. Каждое название — с новой строки.</div>
+        <div style="font-size: 20px; font-weight: 700; margin-bottom: 12px;">Новые ссылки</div>
+        <textarea id="create-input" placeholder="Джо 3&#10;Tema Alt 2"></textarea>
+        <button class="btn-create" onclick="startCreation()">🚀 Создать ссылки</button>
+
+        <div id="progress-area">
+            <div class="progress-text" id="progress-percent">0%</div>
+            <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+            <div id="task-status" class="task-status"></div>
         </div>
-        <button class="btn-create" onclick="generateLinks()">🚀 Создать ссылки</button>
     </div>
 
     <div class="bottom-panel" id="bottom-panel">
@@ -118,15 +146,12 @@
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-        const API_URL = "https://worker-production-b9f1.up.railway.app/api/stats";
-        let isEditMode = false;
-        let selectedItems = new Set();
-        let currentData = [];
+        const API_URL = "https://worker-production-b9f1.up.railway.app";
+        let isEditMode = false, selectedItems = new Set(), currentData = [];
 
         function switchTab(tab) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
             if (tab === 'stats') {
                 document.querySelectorAll('.tab')[0].classList.add('active');
                 document.getElementById('tab-stats').classList.add('active');
@@ -138,30 +163,55 @@
             }
         }
 
-        // Отправка данных боту для создания и показ красивого сообщения
-        function generateLinks() {
+        async function startCreation() {
             const text = document.getElementById('create-input').value.trim();
-            if (!text) return tg.showAlert("Пожалуйста, введи список");
+            if (!text) return tg.showAlert("Введи список");
             
-            // Отправляем данные в бота
-            tg.sendData(JSON.stringify({ 
-                action: "prepare_create", 
-                text: text 
-            }));
-            
-            // Закрываем Mini App
-            tg.close();
+            const lines = text.split('\n').filter(l => l.trim());
+            const tasks = [];
+            for (let line of lines) {
+                const match = line.match(/^(.+?)\s+(\d+)$/);
+                if (match) tasks.push({ name: match[1].trim(), count: parseInt(match[2]) });
+            }
+
+            if (tasks.length === 0) return tg.showAlert("Неверный формат. Напиши: Название 3");
+
+            document.getElementById('progress-area').style.display = 'block';
+            document.getElementById('progress-fill').style.width = '50%';
+            document.getElementById('progress-percent').innerText = '50%';
+            document.getElementById('task-status').innerText = 'Создаю ссылки...';
+
+            try {
+                const response = await fetch(`${API_URL}/api/create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tasks: tasks })
+                });
+                
+                if (!response.ok) throw new Error("Ошибка сервера " + response.status);
+                const result = await response.json();
+                
+                if (result.status === 'ok') {
+                    document.getElementById('progress-fill').style.width = '100%';
+                    document.getElementById('progress-percent').innerText = '100%';
+                    document.getElementById('task-status').innerHTML = "✅ <b>Готово!</b> Ссылки в канале.";
+                    tg.showAlert("Ссылки успешно созданы!");
+                    document.getElementById('create-input').value = '';
+                } else {
+                    throw new Error(result.message || "Неизвестная ошибка");
+                }
+            } catch (e) {
+                document.getElementById('task-status').innerText = "❌ Ошибка: " + e.message;
+                tg.showAlert("Ошибка. Проверь Railway.");
+            }
         }
 
-        // --- СТАТИСТИКА ---
         async function fetchStats() {
             try {
-                const response = await fetch(API_URL);
-                currentData = await response.json();
+                const res = await fetch(`${API_URL}/api/stats`);
+                currentData = await res.json();
                 renderList();
-            } catch (e) {
-                document.getElementById('list').innerHTML = "Ошибка загрузки данных";
-            }
+            } catch (e) { document.getElementById('list').innerHTML = "Ошибка загрузки"; }
         }
 
         function renderList() {
@@ -170,21 +220,20 @@
             currentData.sort((a, b) => b.requests - a.requests);
             let html = "";
             currentData.forEach(item => {
-                const isSelected = selectedItems.has(item.name);
-                const shortUrl = item.url ? (item.url.length > 30 ? item.url.substring(0, 30) + '...' : item.url) : 'Ссылка не найдена';
+                const isSel = selectedItems.has(item.name);
                 html += `
-                    <div class="card ${isSelected ? 'selected' : ''}" onclick="handleCardClick(event, '${item.name}')">
+                    <div class="card ${isSel ? 'selected' : ''}" onclick="handleCardClick(event, '${item.name}')">
                         <div class="card-header">
                             <div class="name-container">
-                                <div class="checkbox ${isEditMode ? 'active' : ''} ${isSelected ? 'checked' : ''}"></div>
-                                <div class="name">${item.name}</div>
+                                <div class="checkbox ${isEditMode ? 'active' : ''} ${isSel ? 'checked' : ''}"></div>
+                                <div class="name-box">${item.name}</div>
                             </div>
                             <div class="stats">
                                 <span class="req">Заявки: ${item.requests}</span>
                                 <span class="join">Вступили: ${item.joins}</span>
                             </div>
                         </div>
-                        <div class="url-text">${shortUrl}</div>
+                        <div style="font-size: 12px; color: var(--hint-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.url || 'Ссылка не найдена'}</div>
                         <div class="actions ${isEditMode ? 'hidden' : ''}">
                             <button class="btn btn-copy" onclick="event.stopPropagation(); copyLink('${item.url}')">Скопировать</button>
                             <button class="btn btn-delete" onclick="event.stopPropagation(); deleteSingle('${item.name}')">Удалить</button>
@@ -212,25 +261,23 @@
             renderList();
         }
 
-        function updateDeleteButton() {
-            document.getElementById('btn-delete-all').innerText = `Удалить выбранные (${selectedItems.size})`;
-        }
+        function updateDeleteButton() { document.getElementById('btn-delete-all').innerText = `Удалить выбранные (${selectedItems.size})`; }
 
         function deleteSelected() {
             if (selectedItems.size === 0) return;
-            tg.showConfirm(`Удалить ${selectedItems.size} ссылок?`, (confirmed) => {
-                if (confirmed) {
-                    tg.sendData(JSON.stringify({ action: "mass_delete", names: Array.from(selectedItems) }));
-                    tg.close();
+            tg.showConfirm(`Удалить ${selectedItems.size} ссылок?`, (ok) => {
+                if (ok) { 
+                    tg.sendData(JSON.stringify({ action: "mass_delete", names: Array.from(selectedItems) })); 
+                    setTimeout(() => tg.close(), 500);
                 }
             });
         }
 
         function deleteSingle(name) {
-            tg.showConfirm(`Удалить ${name}?`, (confirmed) => {
-                if (confirmed) {
-                    tg.sendData(JSON.stringify({ action: "delete", name: name }));
-                    tg.close();
+            tg.showConfirm(`Удалить ${name}?`, (ok) => {
+                if (ok) { 
+                    tg.sendData(JSON.stringify({ action: "delete", name: name })); 
+                    setTimeout(() => tg.close(), 500); 
                 }
             });
         }
