@@ -45,6 +45,7 @@
         <div class="tab active" onclick="switchTab('stats')">📊 Стат-ка</div>
         <div class="tab" onclick="switchTab('create')">➕ Создать</div>
         <div class="tab" onclick="switchTab('report')">📅 Отчет</div>
+        <div class="tab" onclick="switchTab('unique')">✨ Фото</div>
     </div>
 
     <div id="tab-stats" class="tab-content active">
@@ -90,6 +91,20 @@
         <div id="report-list"></div>
     </div>
 
+    <!-- НОВАЯ ВКЛАДКА УНИКАЛИЗАЦИЯ -->
+    <div id="tab-unique" class="tab-content">
+        <div style="font-size: 20px; font-weight: 700; margin-bottom: 20px; text-align: center;">Уникализация фото</div>
+        <div style="background: var(--card); border-radius: 20px; padding: 24px; text-align: center; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;">
+            <div style="font-size: 48px; margin-bottom: 16px;">🖼️</div>
+            <div style="font-size: 14px; color: var(--hint); margin-bottom: 20px;">
+                Чтобы уникализировать фото, отправь его в чат боту и в подписи напиши:<br><br>
+                <b style="color: var(--btn); font-size: 16px;">Название 50</b><br>
+                (где 50 — количество копий)
+            </div>
+            <button class="btn-create" onclick="tg.close()">Понятно, в чат</button>
+        </div>
+    </div>
+
     <div class="bottom-panel" id="bottom-panel">
         <button class="btn-delete-all" id="btn-delete-all" onclick="deleteSelected()">Удалить (0)</button>
     </div>
@@ -105,6 +120,7 @@
             if (tab === 'stats') { document.querySelectorAll('.tab')[0].classList.add('active'); document.getElementById('tab-stats').classList.add('active'); fetchStats(); fetchDashboard(); }
             else if (tab === 'create') { document.querySelectorAll('.tab')[1].classList.add('active'); document.getElementById('tab-create').classList.add('active'); document.getElementById('bottom-panel').classList.remove('active'); }
             else if (tab === 'report') { document.querySelectorAll('.tab')[2].classList.add('active'); document.getElementById('tab-report').classList.add('active'); fetchReport(); }
+            else if (tab === 'unique') { document.querySelectorAll('.tab')[3].classList.add('active'); document.getElementById('tab-unique').classList.add('active'); }
         }
 
         async function fetchStats() {
@@ -122,8 +138,6 @@
             
             listEl.innerHTML = currentData.map(item => {
                 const isSel = selectedItems.has(item.name);
-                
-                // Чиним кракозябры (если они остались от старых ссылок)
                 let displayName = item.name;
                 try { displayName = decodeURIComponent(escape(item.name)); } catch(e) {}
 
@@ -181,4 +195,107 @@
                 const match = line.match(/^(.+?)\s+(\d+)$/);
                 if (match) tasks.push({ name: match[1].trim(), count: parseInt(match[2]) });
             }
-            if (tasks.length === 0) return tg.showAlert("Неверный формат. Напи
+            if (tasks.length === 0) return tg.showAlert("Неверный формат");
+
+            document.getElementById('progress-area').style.display = 'block';
+            document.getElementById('progress-fill').style.width = '0%';
+            document.getElementById('progress-percent').innerText = '0%';
+            
+            let totalLinks = tasks.reduce((sum, t) => sum + t.count, 0);
+            let createdLinks = 0;
+            let listHtml = '';
+            tasks.forEach(t => { listHtml += `<div class="progress-item" id="task-${t.name}"><span>${t.name}</span><span>0/${t.count}</span></div>`; });
+            document.getElementById('progress-list').innerHTML = listHtml;
+
+            for (let task of tasks) {
+                const taskEl = document.getElementById(`task-${task.name}`);
+                if (taskEl) taskEl.classList.add('active');
+
+                for (let i = 1; i <= task.count; i++) {
+                    try {
+                        const response = await fetch(`${API_URL}/api/create_single`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name: task.name, index: i, count: task.count })
+                        });
+                        const result = await response.json();
+                        if (result.status === 'ok') {
+                            createdLinks++;
+                            const percent = Math.round((createdLinks / totalLinks) * 100);
+                            document.getElementById('progress-percent').innerText = percent + '%';
+                            document.getElementById('progress-fill').style.width = percent + '%';
+                            if (taskEl) taskEl.innerHTML = `<span>${task.name}</span><span>${i}/${task.count} ✅</span>`;
+                        }
+                    } catch (e) { console.error(e); }
+                }
+                if (taskEl) { taskEl.classList.remove('active'); taskEl.classList.add('done'); }
+            }
+            tg.showAlert("Все ссылки созданы!");
+            document.getElementById('create-input').value = '';
+            setTimeout(() => { document.getElementById('progress-area').style.display = 'none'; }, 3000);
+            fetchStats(); fetchDashboard();
+        }
+
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            document.getElementById('btn-edit').innerText = isEditMode ? 'Отмена' : 'Выбрать';
+            document.getElementById('bottom-panel').classList.toggle('active', isEditMode);
+            if (!isEditMode) selectedItems.clear();
+            updateDeleteButton(); renderList();
+        }
+
+        function handleCardClick(event, name) {
+            if (!isEditMode) return;
+            if (selectedItems.has(name)) selectedItems.delete(name);
+            else selectedItems.add(name);
+            updateDeleteButton(); renderList();
+        }
+
+        function updateDeleteButton() { document.getElementById('btn-delete-all').innerText = `Удалить выбранные (${selectedItems.size})`; }
+
+        async function deleteSelected() {
+            if (selectedItems.size === 0) return;
+            if (!confirm(`Удалить ${selectedItems.size} ссылок?`)) return;
+            document.getElementById('btn-delete-all').innerText = "Удаляю...";
+            try {
+                const res = await fetch(`${API_URL}/api/delete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ names: Array.from(selectedItems) })
+                });
+                const result = await res.json();
+                if (result.status === 'ok') {
+                    tg.showAlert(`Удалено: ${result.deleted}`);
+                    selectedItems.clear(); isEditMode = false;
+                    document.getElementById('btn-edit').innerText = 'Выбрать';
+                    document.getElementById('bottom-panel').classList.remove('active');
+                    fetchStats(); fetchDashboard();
+                }
+            } catch (e) { tg.showAlert("Ошибка сети"); }
+            updateDeleteButton();
+        }
+
+        async function deleteSingle(name) {
+            if (!confirm(`Удалить ${name}?`)) return;
+            try {
+                const res = await fetch(`${API_URL}/api/delete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ names: [name] })
+                });
+                if (res.ok) { tg.showAlert("Ссылка удалена"); fetchStats(); fetchDashboard(); }
+            } catch (e) { tg.showAlert("Ошибка сети"); }
+        }
+
+        function copyLink(url) {
+            if (!url) return tg.showAlert("Ссылка не найдена");
+            navigator.clipboard.writeText(url).then(() => tg.showAlert("Ссылка скопирована!"));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchStats(); fetchDashboard();
+            setInterval(() => { fetchStats(); fetchDashboard(); }, 5000);
+        });
+    </script>
+</body>
+</html>
