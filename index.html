@@ -16,16 +16,14 @@
         }
         body { font-family: -apple-system, sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 16px; padding-bottom: 80px; }
         .tabs { display: flex; background: var(--card-bg); border-radius: 12px; padding: 4px; margin-bottom: 20px; }
-        .tab { flex: 1; text-align: center; padding: 10px; font-weight: 600; font-size: 14px; border-radius: 8px; cursor: pointer; color: var(--hint-color); }
+        .tab { flex: 1; text-align: center; padding: 10px; font-weight: 600; font-size: 13px; border-radius: 8px; cursor: pointer; color: var(--hint-color); }
         .tab.active { background: var(--btn-color); color: #fff; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* Создание */
         textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--card-bg); background: var(--card-bg); color: var(--text-color); font-size: 16px; box-sizing: border-box; min-height: 100px; font-family: monospace; }
         .btn-create { width: 100%; padding: 14px; background: var(--btn-color); color: #fff; border: none; border-radius: 12px; font-weight: 700; font-size: 16px; margin-top: 10px; }
         
-        /* Красивый прогресс */
         #progress-area { display: none; margin-top: 20px; background: var(--card-bg); padding: 16px; border-radius: 16px; border: 1px solid #333; }
         .progress-header { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
         .progress-bar { height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; margin-bottom: 12px; }
@@ -35,7 +33,6 @@
         .progress-item.done { color: var(--success); }
         .progress-item.active { color: var(--btn-color); font-weight: bold; }
 
-        /* Статистика */
         .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .card { background: var(--card-bg); border-radius: 16px; padding: 14px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px; border: 2px solid transparent; transition: border-color 0.2s; }
         .card.selected { border-color: var(--btn-color); }
@@ -60,13 +57,29 @@
 </head>
 <body>
     <div class="tabs">
-        <div class="tab active" onclick="switchTab('stats')">📊 Статистика</div>
+        <div class="tab active" onclick="switchTab('stats')">📊 Стат-ка</div>
         <div class="tab" onclick="switchTab('create')">➕ Создать</div>
+        <div class="tab" onclick="switchTab('report')">📅 Отчет</div>
     </div>
 
     <div id="tab-stats" class="tab-content active">
+        <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+            <div style="flex: 1; background: var(--card-bg); padding: 12px 8px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
+                <div style="font-size: 22px; font-weight: 800; color: var(--btn-color);" id="total-requests">0</div>
+                <div style="font-size: 11px; color: var(--hint-color); margin-top: 4px; line-height: 1.2;">Всего<br>заявок</div>
+            </div>
+            <div style="flex: 1; background: var(--card-bg); padding: 12px 8px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
+                <div style="font-size: 22px; font-weight: 800; color: var(--success);" id="today-requests">0</div>
+                <div style="font-size: 11px; color: var(--hint-color); margin-top: 4px; line-height: 1.2;">Сегодня<br>запуск</div>
+            </div>
+            <div style="flex: 1; background: var(--card-bg); padding: 12px 8px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
+                <div style="font-size: 22px; font-weight: 800; color: #f39c12;" id="yesterday-requests">0</div>
+                <div style="font-size: 11px; color: var(--hint-color); margin-top: 4px; line-height: 1.2;">Вчера<br>запуск</div>
+            </div>
+        </div>
+
         <div class="header-container">
-            <div style="font-size: 20px; font-weight: 700;">Аналитика</div>
+            <div style="font-size: 20px; font-weight: 700;">Ссылки</div>
             <button style="background: transparent; color: var(--btn-color); border: none; font-size: 16px; font-weight: 600;" id="btn-edit" onclick="toggleEditMode()">Выбрать</button>
         </div>
         <div id="list">Загрузка...</div>
@@ -84,6 +97,20 @@
         </div>
     </div>
 
+    <!-- ВКЛАДКА ОТЧЕТ -->
+    <div id="tab-report" class="tab-content">
+        <div style="font-size: 20px; font-weight: 700; margin-bottom: 20px; text-align: center;">Отчет за сутки</div>
+        
+        <div style="background: var(--card-bg); border-radius: 20px; padding: 24px; text-align: center; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;">
+            <div style="font-size: 14px; color: var(--hint-color); margin-bottom: 8px;" id="report-period">Загрузка...</div>
+            <div style="font-size: 48px; font-weight: 800; color: var(--btn-color);" id="report-total">0</div>
+            <div style="font-size: 14px; color: var(--hint-color); margin-top: 8px;">Заявок за цикл</div>
+        </div>
+
+        <div style="font-size: 16px; font-weight: 600; margin-bottom: 12px;">Детализация по ссылкам:</div>
+        <div id="report-list"></div>
+    </div>
+
     <div class="bottom-panel" id="bottom-panel">
         <button class="btn-delete-all" id="btn-delete-all" onclick="deleteSelected()">Удалить выбранные (0)</button>
     </div>
@@ -97,14 +124,20 @@
         function switchTab(tab) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
             if (tab === 'stats') {
                 document.querySelectorAll('.tab')[0].classList.add('active');
                 document.getElementById('tab-stats').classList.add('active');
                 fetchStats();
-            } else {
+                fetchDashboard();
+            } else if (tab === 'create') {
                 document.querySelectorAll('.tab')[1].classList.add('active');
                 document.getElementById('tab-create').classList.add('active');
                 document.getElementById('bottom-panel').classList.remove('active');
+            } else if (tab === 'report') {
+                document.querySelectorAll('.tab')[2].classList.add('active');
+                document.getElementById('tab-report').classList.add('active');
+                fetchReport();
             }
         }
 
@@ -138,7 +171,6 @@
                         const response = await fetch(`${API_URL}/api/create_single`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            // Отправляем count, чтобы бот знал, когда собирать всё в канал
                             body: JSON.stringify({ name: task.name, index: i, count: task.count })
                         });
                         const result = await response.json();
@@ -157,106 +189,35 @@
             document.getElementById('create-input').value = '';
             setTimeout(() => { document.getElementById('progress-area').style.display = 'none'; }, 3000);
             fetchStats();
+            fetchDashboard();
         }
 
-        async function fetchStats() {
+        async function fetchDashboard() {
             try {
-                const res = await fetch(`${API_URL}/api/stats`);
-                currentData = await res.json();
-                renderList();
-            } catch (e) { document.getElementById('list').innerHTML = "Ошибка загрузки"; }
+                const res = await fetch(`${API_URL}/api/dashboard`);
+                const data = await res.json();
+                document.getElementById('total-requests').innerText = data.total_requests;
+                document.getElementById('today-requests').innerText = data.today_requests;
+                document.getElementById('yesterday-requests').innerText = data.yesterday_requests;
+            } catch (e) { console.error("Ошибка статистики", e); }
         }
 
-        function renderList() {
-            const listEl = document.getElementById('list');
-            if (currentData.length === 0) { listEl.innerHTML = "Пока нет данных."; return; }
-            currentData.sort((a, b) => b.requests - a.requests);
-            let html = "";
-            currentData.forEach(item => {
-                const isSel = selectedItems.has(item.name);
-                html += `
-                    <div class="card ${isSel ? 'selected' : ''}" onclick="handleCardClick(event, '${item.name}')">
-                        <div class="card-header">
-                            <div class="name-container">
-                                <div class="checkbox ${isEditMode ? 'active' : ''} ${isSel ? 'checked' : ''}"></div>
-                                <div class="name-box">${item.name}</div>
-                            </div>
-                            <div class="stats">
-                                <span class="req">Заявки: ${item.requests}</span>
-                                <span class="join">Вступили: ${item.joins}</span>
-                            </div>
-                        </div>
-                        <div style="font-size: 12px; color: var(--hint-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.url || 'Ссылка не найдена'}</div>
-                        <div class="actions ${isEditMode ? 'hidden' : ''}">
-                            <button class="btn btn-copy" onclick="event.stopPropagation(); copyLink('${item.url}')">Скопировать</button>
-                            <button class="btn btn-delete" onclick="event.stopPropagation(); deleteSingle('${item.name}')">Удалить</button>
-                        </div>
-                    </div>
-                `;
-            });
-            listEl.innerHTML = html;
-        }
-
-        function toggleEditMode() {
-            isEditMode = !isEditMode;
-            document.getElementById('btn-edit').innerText = isEditMode ? 'Отмена' : 'Выбрать';
-            document.getElementById('bottom-panel').classList.toggle('active', isEditMode);
-            if (!isEditMode) selectedItems.clear();
-            updateDeleteButton();
-            renderList();
-        }
-
-        function handleCardClick(event, name) {
-            if (!isEditMode) return;
-            if (selectedItems.has(name)) selectedItems.delete(name);
-            else selectedItems.add(name);
-            updateDeleteButton();
-            renderList();
-        }
-
-        function updateDeleteButton() { document.getElementById('btn-delete-all').innerText = `Удалить выбранные (${selectedItems.size})`; }
-
-        async function deleteSelected() {
-            if (selectedItems.size === 0) return;
-            if (!confirm(`Удалить ${selectedItems.size} ссылок?`)) return;
-            document.getElementById('btn-delete-all').innerText = "Удаляю...";
+        async function fetchReport() {
             try {
-                const res = await fetch(`${API_URL}/api/delete`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ names: Array.from(selectedItems) })
-                });
-                const result = await res.json();
-                if (result.status === 'ok') {
-                    tg.showAlert(`Удалено: ${result.deleted}`);
-                    selectedItems.clear(); isEditMode = false;
-                    document.getElementById('btn-edit').innerText = 'Выбрать';
-                    document.getElementById('bottom-panel').classList.remove('active');
-                    fetchStats();
+                const res = await fetch(`${API_URL}/api/daily_report`);
+                const data = await res.json();
+                
+                document.getElementById('report-period').innerText = data.period || 'Нет данных';
+                document.getElementById('report-total').innerText = data.total_requests;
+                
+                const listEl = document.getElementById('report-list');
+                if (data.details.length === 0) {
+                    listEl.innerHTML = "<div style='text-align:center; color:var(--hint-color); padding:20px;'>За этот период заявок не было.</div>";
+                    return;
                 }
-            } catch (e) { tg.showAlert("Ошибка сети"); }
-            updateDeleteButton();
-        }
-
-        async function deleteSingle(name) {
-            if (!confirm(`Удалить ${name}?`)) return;
-            try {
-                const res = await fetch(`${API_URL}/api/delete`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ names: [name] })
-                });
-                if (res.ok) { tg.showAlert("Ссылка удалена"); fetchStats(); }
-            } catch (e) { tg.showAlert("Ошибка сети"); }
-        }
-
-        function copyLink(url) {
-            if (!url) return tg.showAlert("Ссылка не найдена");
-            navigator.clipboard.writeText(url).then(() => tg.showAlert("Ссылка скопирована!"));
-        }
-
-        fetchStats();
-        setInterval(fetchStats, 5000);
-    </script>
-</body>
-</html>
+                
+                let html = "";
+                data.details.forEach(item => {
+                    html += `
+                        <div class="card" style="flex-direction: row; justify-content: space-between; padding: 12px; margin-bottom: 8px; align-items: center;">
+                            <div
