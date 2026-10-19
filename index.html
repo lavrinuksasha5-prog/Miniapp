@@ -6,38 +6,54 @@
     <title>Link Manager</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --bg: var(--tg-theme-bg-color, #121212); --card: var(--tg-theme-secondary-bg-color, #1e1e1e); --text: var(--tg-theme-text-color, #fff); --hint: var(--tg-theme-hint-color, #888); --btn: var(--tg-theme-button-color, #2ea6ff); --success: #2ecc71; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 16px; padding-bottom: 80px; }
-        .tabs { display: flex; background: var(--card); border-radius: 12px; padding: 4px; margin-bottom: 20px; }
-        .tab { flex: 1; text-align: center; padding: 10px; font-weight: 600; font-size: 14px; border-radius: 8px; cursor: pointer; color: var(--hint); }
-        .tab.active { background: var(--btn); color: #fff; }
-        .tab-content { display: none; } .tab-content.active { display: block; }
-        textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--card); background: var(--card); color: var(--text); font-size: 16px; box-sizing: border-box; min-height: 100px; font-family: monospace; }
-        .btn-create { width: 100%; padding: 14px; background: var(--btn); color: #fff; border: none; border-radius: 12px; font-weight: 700; font-size: 16px; margin-top: 10px; }
-        #progress-area { display: none; margin-top: 20px; background: var(--card); padding: 16px; border-radius: 16px; border: 1px solid #333; }
+        :root {
+            --bg-color: var(--tg-theme-bg-color, #121212);
+            --card-bg: var(--tg-theme-secondary-bg-color, #1e1e1e);
+            --text-color: var(--tg-theme-text-color, #ffffff);
+            --hint-color: var(--tg-theme-hint-color, #888888);
+            --btn-color: var(--tg-theme-button-color, #2ea6ff);
+            --success: #2ecc71;
+        }
+        body { font-family: -apple-system, sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 16px; padding-bottom: 80px; }
+        .tabs { display: flex; background: var(--card-bg); border-radius: 12px; padding: 4px; margin-bottom: 20px; }
+        .tab { flex: 1; text-align: center; padding: 10px; font-weight: 600; font-size: 14px; border-radius: 8px; cursor: pointer; color: var(--hint-color); }
+        .tab.active { background: var(--btn-color); color: #fff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Создание */
+        textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--card-bg); background: var(--card-bg); color: var(--text-color); font-size: 16px; box-sizing: border-box; min-height: 100px; font-family: monospace; }
+        .btn-create { width: 100%; padding: 14px; background: var(--btn-color); color: #fff; border: none; border-radius: 12px; font-weight: 700; font-size: 16px; margin-top: 10px; }
+        
+        /* Красивый прогресс */
+        #progress-area { display: none; margin-top: 20px; background: var(--card-bg); padding: 16px; border-radius: 16px; border: 1px solid #333; }
         .progress-header { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
         .progress-bar { height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; margin-bottom: 12px; }
-        .progress-fill { height: 100%; background: var(--btn); width: 0%; transition: width 0.3s; }
+        .progress-fill { height: 100%; background: var(--btn-color); width: 0%; transition: width 0.3s; }
         .progress-list { max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
         .progress-item { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 8px; border-radius: 6px; background: rgba(255,255,255,0.05); }
         .progress-item.done { color: var(--success); }
-        .progress-item.active { color: var(--btn); font-weight: bold; }
+        .progress-item.active { color: var(--btn-color); font-weight: bold; }
+
+        /* Статистика */
         .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .card { background: var(--card); border-radius: 16px; padding: 14px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px; border: 2px solid transparent; transition: border-color 0.2s; }
-        .card.selected { border-color: var(--btn); }
+        .card { background: var(--card-bg); border-radius: 16px; padding: 14px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px; border: 2px solid transparent; transition: border-color 0.2s; }
+        .card.selected { border-color: var(--btn-color); }
         .card-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
         .name-container { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
-        .checkbox { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--hint); display: none; align-items: center; justify-content: center; flex-shrink: 0; }
+        .checkbox { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--hint-color); display: none; align-items: center; justify-content: center; flex-shrink: 0; }
         .checkbox.active { display: flex; }
-        .checkbox.checked { background: var(--btn); border-color: var(--btn); }
+        .checkbox.checked { background: var(--btn-color); border-color: var(--btn-color); }
         .checkbox.checked::after { content: ''; width: 6px; height: 12px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); margin-bottom: 3px; }
-        .name-box { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; font-weight: 700; font-size: 14px; padding: 4px 8px; border-radius: 8px; word-break: break-word; line-height: 1.2; }
+        .name-box { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #ffffff; font-weight: 700; font-size: 14px; padding: 4px 8px; border-radius: 8px; word-break: break-word; line-height: 1.2; }
         .stats { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-size: 12px; font-weight: 600; flex-shrink: 0; }
         .req { color: #f39c12; } .join { color: var(--success); }
-        .actions { display: flex; gap: 8px; } .actions.hidden { display: none; }
+        .actions { display: flex; gap: 8px; }
+        .actions.hidden { display: none; }
         .btn { flex: 1; padding: 10px; border-radius: 10px; border: none; font-weight: 600; font-size: 14px; }
-        .btn-copy { background: var(--btn); color: #fff; } .btn-delete { background: rgba(231, 76, 60, 0.15); color: #e74c3c; }
-        .bottom-panel { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); padding: 16px; display: none; z-index: 100; }
+        .btn-copy { background: var(--btn-color); color: #fff; }
+        .btn-delete { background: rgba(231, 76, 60, 0.15); color: #e74c3c; }
+        .bottom-panel { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); padding: 16px; display: none; z-index: 100; }
         .bottom-panel.active { display: flex; }
         .btn-delete-all { background: #e74c3c; color: #fff; padding: 12px; border-radius: 12px; border: none; font-weight: 700; width: 100%; }
     </style>
@@ -51,7 +67,7 @@
     <div id="tab-stats" class="tab-content active">
         <div class="header-container">
             <div style="font-size: 20px; font-weight: 700;">Аналитика</div>
-            <button style="background: transparent; color: var(--btn); border: none; font-size: 16px; font-weight: 600;" id="btn-edit" onclick="toggleEditMode()">Выбрать</button>
+            <button style="background: transparent; color: var(--btn-color); border: none; font-size: 16px; font-weight: 600;" id="btn-edit" onclick="toggleEditMode()">Выбрать</button>
         </div>
         <div id="list">Загрузка...</div>
     </div>
@@ -122,7 +138,8 @@
                         const response = await fetch(`${API_URL}/api/create_single`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ name: task.name, index: i })
+                            // Отправляем count, чтобы бот знал, когда собирать всё в канал
+                            body: JSON.stringify({ name: task.name, index: i, count: task.count })
                         });
                         const result = await response.json();
                         if (result.status === 'ok') {
@@ -169,12 +186,13 @@
                                 <span class="join">Вступили: ${item.joins}</span>
                             </div>
                         </div>
-                        <div style="font-size: 12px; color: var(--hint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.url || 'Ссылка не найдена'}</div>
+                        <div style="font-size: 12px; color: var(--hint-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.url || 'Ссылка не найдена'}</div>
                         <div class="actions ${isEditMode ? 'hidden' : ''}">
                             <button class="btn btn-copy" onclick="event.stopPropagation(); copyLink('${item.url}')">Скопировать</button>
                             <button class="btn btn-delete" onclick="event.stopPropagation(); deleteSingle('${item.name}')">Удалить</button>
                         </div>
-                    </div>`;
+                    </div>
+                `;
             });
             listEl.innerHTML = html;
         }
